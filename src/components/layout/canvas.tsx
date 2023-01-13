@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { A11yAnnouncer } from "@react-three/a11y";
 import { OrbitControls, Preload, Stats } from "@react-three/drei";
+import { Raytracer } from "@react-three/lgl";
 
 const Controls = () => {
   const control = useRef(null);
