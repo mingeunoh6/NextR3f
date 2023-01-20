@@ -16,7 +16,9 @@ const readFile = (
   const options: formidable.Options = {};
 
   if (saveLocally) {
+    //저장할 곳
     options.uploadDir = path.join(process.cwd(), "/public");
+    //저장할 파일 이름
     options.filename = (name, ext, path, form) => {
       return path.originalFilename;
     };

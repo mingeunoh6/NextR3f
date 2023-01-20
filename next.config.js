@@ -11,9 +11,9 @@ const nextConfig = {
     // Allow importing of shader files (e.g. `.glsl` -- filenames below)
     // @see: https://github.com/glslify/glslify-loader
     config.module.rules.push({
-      test: /\.(glsl|vs|fs|vert|frag|ps)$/,
+      test: /\.(glsl|vs|fs|vert|frag|ps|svg)$/,
       exclude: /node_modules/,
-      use: ["raw-loader", "glslify-loader"],
+      use: ["raw-loader", "glslify-loader", "@svgr/webpack"],
     });
 
     return config;

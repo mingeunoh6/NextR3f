@@ -1,7 +1,15 @@
 import useStore from "@/helpers/store";
-import React, { useCallback, useState } from "react";
+import React, {
+  Suspense,
+  useCallback,
+  useEffect,
+  useState,
+  useRef,
+} from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
+import { useLoader } from "@react-three/fiber";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { Raytracer } from "@react-three/lgl";
 import { Environment } from "@react-three/drei";
 import { useDropzone } from "react-dropzone";
@@ -11,6 +19,7 @@ import fetch from "isomorphic-unfetch";
 import axios from "axios";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
+import styled from "styled-components";
 // import Shader from '@/components/canvas/ShaderExample/ShaderExample'
 
 // Prefer dynamic import for production builds
@@ -28,6 +37,7 @@ import Link from "next/link";
 
 interface Props {
   dirs: string[];
+  model: string;
 }
 
 export const getServerSideProps: GetServerSideProps = async () => {
@@ -42,59 +52,109 @@ export const getServerSideProps: GetServerSideProps = async () => {
   }
 };
 
-const DOM = ({ dirs }) => {
+const ModelInspcetor = styled.div`
+  display: flex;
+  width: 20vw;
+  height: 100%;
+  flex-direction: column;
+  border: 1px solid black;
+`;
+
+const DropZone = styled.div`
+  padding: 10px;
+  border: 1px solid red;
+`;
+
+const ModelList = styled.div`
+  padding: 10px;
+  border: 1px solid blue;
+`;
+
+const DOM = ({ dirs, model }) => {
   const [progress, setProgress] = useState<number>(0);
-  console.log(dirs);
+
+  console.log(dirs[dirs.length - 1]);
+
   const onDrop = async (acceptedFiles: FormData) => {
     // Do something with the files
+
     try {
       const formData = new FormData();
       formData.append(acceptedFiles[0].fileName, acceptedFiles[0]);
-      const data = await axios.post("/api/3dUpload", formData);
-      console.log(data);
+      console.log(formData);
+      const data = await axios
+        .post("/api/3dUpload", formData)
+        .then(() => model(acceptedFiles[0].name));
     } catch (error: any) {
       console.log(error.response?.data);
     }
   };
 
+  const handleItemList = useCallback(({ e, item }) => {
+    e.preventDefault();
+    console.log(item);
+    model(item);
+  }, []);
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   return (
-    <div {...getRootProps()}>
-      <input {...getInputProps()} />
-      {isDragActive ? (
-        <p>Drop the files here ...</p>
-      ) : (
-        <p>Drag 'n' drop some files here, or click to select files</p>
-      )}
-      <div>
-        {dirs.map((item) => (
-          <Link key={item} href={"/" + item}>
-            <a>{item}</a>
-          </Link>
-        ))}
-      </div>
-    </div>
+    <ModelInspcetor>
+      <DropZone {...getRootProps()}>
+        <input {...getInputProps()} />
+        {isDragActive ? (
+          <p>Drop the files here ...</p>
+        ) : (
+          <p>Drag 'n' drop some files here, or click to select files</p>
+        )}
+      </DropZone>
+      <ModelList>
+        <ul>
+          {dirs.map((item) => (
+            <li key={item} onClick={(e) => handleItemList({ e, item })}>
+              {item}
+            </li>
+          ))}
+        </ul>
+      </ModelList>
+    </ModelInspcetor>
   );
 };
 
-const R3F = () => {
+const R3F = ({ model }) => {
+  const gltf = useLoader(GLTFLoader, `/${model}`);
+
+  useEffect(() => {
+    if (model !== null) {
+    }
+  }, [model]);
+
+  const modelDetail = useCallback((e) => {
+    e.object.material.color.set([77, 25, 25]);
+  }, []);
+
   return (
     <>
-      <Environment preset="city" />
-      <mesh>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial />
-      </mesh>
+      <Environment preset="forest" background blur={0.5} />
+      <Suspense fallback={null}>
+        <directionalLight position={[0, 10, 0]} intensity={10} />
+        <primitive object={gltf.scene} onClick={modelDetail} />
+      </Suspense>
     </>
   );
 };
 
 function Page({ dirs }) {
+  const [model, setModel] = useState<String>("tora-kun.glb");
+  const callback = useCallback((payload) => {
+    setModel(payload);
+  }, []);
+  console.log("model", model);
   return (
     <>
-      <DOM dirs={dirs} />
-      <R3F />
+      <DOM dirs={dirs} model={callback} />
+
+      <R3F model={model} />
     </>
   );
 }
