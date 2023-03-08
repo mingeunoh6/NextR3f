@@ -135,7 +135,7 @@ const R3F = ({ model }) => {
 
   return (
     <>
-      <Environment preset="forest" background blur={0.5} />
+      <Environment preset="forest" blur={0.5} />
       <Suspense fallback={null}>
         <directionalLight position={[0, 10, 0]} intensity={10} />
         <primitive object={gltf.scene} onClick={modelDetail} />

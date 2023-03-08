@@ -5,6 +5,7 @@
     "Ryosuke Hana <https://twitter.com/whoisryosuke>",
     "Renaud ROHLINGER <https://twitter.com/onirenaud>"
   ],
+  "type": "module",
   "license": "MIT",
   "private": true,
   "engines": {
@@ -21,6 +22,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@google/model-viewer": "^3.0.0",
     "@react-spring/three": "^9.4.5",
     "@react-three/a11y": "^3.0.0",
     "@react-three/drei": "^9.11.3",
